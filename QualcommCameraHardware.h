@@ -31,6 +31,7 @@
 #include <system/camera.h>
 #include <hardware/camera.h>
 #include <gralloc_priv.h>
+#include <linux/ion.h>
 
 extern "C" {
 #include <linux/android_pmem.h>
@@ -39,6 +40,11 @@ extern "C" {
 }
 // Extra propriatary stuff (mostly from CM)
 #define MSM_CAMERA_CONTROL "/dev/msm_camera/control0"
+
+#define ION_CP_MM_HEAP_ID 8
+#define ION_CAMERA_HEAP_ID 20
+#define ION_IOMMU_HEAP_ID 25
+#define MSM_PMEM_VIDEO_VPE 16
 
 #define TRUE 1
 #define FALSE 0
@@ -70,7 +76,7 @@ typedef struct {
 } video_dis_param_ctrl_t;
 
 typedef uint32_t jpeg_event_t;
-#if 0
+#if 1
 typedef enum {
 	CAMERA_WB_MIN_MINUS_1,
 	CAMERA_WB_AUTO = 1,  /* This list must match aeecamera.h */
@@ -271,6 +277,10 @@ public:
     void notifyShutter(common_crop_t *crop, bool mPlayShutterSoundOnly);
     void receive_camframe_error_timeout();
     static void getCameraInfo();
+
+    int allocate_ion_memory(int *main_ion_fd, struct ion_allocation_data* alloc,
+    struct ion_fd_data* ion_info_fd, int ion_type, int size, int *memfd);
+    int deallocate_ion_memory(int *main_ion_fd, struct ion_fd_data* ion_info_fd);
 
 private:
     QualcommCameraHardware();
@@ -604,6 +614,17 @@ private:
     camera_memory_t *mJpegMapped;
     camera_memory_t *mRawSnapShotMapped;
     camera_memory_t *mRecordMapped[9];
+
+    int raw_main_ion_fd[MAX_SNAPSHOT_BUFFERS];
+    int Jpeg_main_ion_fd[MAX_SNAPSHOT_BUFFERS];
+    int record_main_ion_fd[9];
+    struct ion_allocation_data raw_alloc[MAX_SNAPSHOT_BUFFERS];
+    struct ion_allocation_data Jpeg_alloc[MAX_SNAPSHOT_BUFFERS];
+    struct ion_allocation_data record_alloc[9];
+    struct ion_fd_data raw_ion_info_fd[MAX_SNAPSHOT_BUFFERS];
+    struct ion_fd_data Jpeg_ion_info_fd[MAX_SNAPSHOT_BUFFERS];
+    struct ion_fd_data record_ion_info_fd[9];
+
     struct msm_frame frames[kPreviewBufferCount + MIN_UNDEQUEUD_BUFFER_COUNT];
     struct buffer_map frame_buffer[kPreviewBufferCount + MIN_UNDEQUEUD_BUFFER_COUNT];
     struct msm_frame *recordframes;
