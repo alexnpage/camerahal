@@ -3739,31 +3739,31 @@ status_t QualcommCameraHardware::startPreview()
 }
 
 void QualcommCameraHardware::stopInitialPreview() {
-   mCameraRunning = 0;//!native_stop_ops(CAMERA_OPS_STREAMING_VIDEO, NULL);         
-#if 0 
-+    ALOGV(" %s : E ", __FUNCTION__);
-+    if (mCameraRunning) {
-+        ALOGV(" %s : Camera was running. Stopping ", __FUNCTION__);
-+        {
-+            Mutex::Autolock l(&mCamframeTimeoutLock);
-+           {
-+      Mutex::Autolock cameraRunningLock(&mCameraRunningLock);
-+      if(!camframe_timeout_flag) {
-+                    mCameraRunning = !native_stop_ops(CAMERA_OPS_STREAMING_VIDEO, NULL);
-+                }
-+       }
-+    }
-+    mInitialPreviewHeap.clear();
-+    mRecordHeap.clear();
-+  }
-+  ALOGV(" %s : X ", __FUNCTION__);       
+   mCameraRunning = 0;//!native_stop_ops(CAMERA_OPS_STREAMING_VIDEO, NULL);
+#if 0
+    ALOGV(" %s : E ", __FUNCTION__);
+    if (mCameraRunning) {
+        ALOGV(" %s : Camera was running. Stopping ", __FUNCTION__);
+        {
+            Mutex::Autolock l(&mCamframeTimeoutLock);
+           {
+      Mutex::Autolock cameraRunningLock(&mCameraRunningLock);
+      if(!camframe_timeout_flag) {
+                    mCameraRunning = !native_stop_ops(CAMERA_OPS_STREAMING_VIDEO, NULL);
+                }
+       }
+    }
+    mInitialPreviewHeap.clear();
+    mRecordHeap.clear();
+  }
+  ALOGV(" %s : X ", __FUNCTION__);
 #endif
 }
 
 void QualcommCameraHardware::stopPreviewInternal()
 {
     ALOGI("stopPreviewInternal E: %d", mCameraRunning);
-    if (mCameraRunning) {
+    if (mCameraRunning && mPreviewWindow!=NULL) {
         // Cancel auto focus.
         {
             if (mNotifyCallback && (mMsgEnabled & CAMERA_MSG_FOCUS)) {
